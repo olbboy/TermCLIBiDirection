@@ -1,15 +1,40 @@
 {
     "name": "bidirection-bridge",
     "displayName": "BiDirection Bridge",
-    "description": "Terminal-to-IDE bidirectional communication bridge via Unix Domain Socket",
+    "description": "Terminal-to-IDE bidirectional communication bridge — read code, apply edits, get diagnostics, and control your IDE from any terminal via Unix Domain Socket + JSON-RPC 2.0",
     "version": "1.0.0",
     "publisher": "dmdat",
+    "license": "MIT",
+    "icon": "images/icon.png",
+    "pricing": "Free",
     "engines": {
         "vscode": "^1.85.0"
     },
     "categories": [
-        "Other"
+        "Other",
+        "Testing"
     ],
+    "keywords": [
+        "terminal",
+        "bridge",
+        "ipc",
+        "socket",
+        "bidirectional",
+        "json-rpc",
+        "automation"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/dmdat/bidirection"
+    },
+    "bugs": {
+        "url": "https://github.com/dmdat/bidirection/issues"
+    },
+    "homepage": "https://github.com/dmdat/bidirection#readme",
+    "galleryBanner": {
+        "color": "#1a1a2e",
+        "theme": "dark"
+    },
     "activationEvents": [
         "onStartupFinished"
     ],
@@ -47,8 +72,10 @@
         }
     },
     "scripts": {
-        "build": "tsc",
-        "dev": "tsc --watch",
+        "vscode:prepublish": "npm run esbuild-base -- --minify",
+        "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --target=node18",
+        "build": "npm run esbuild-base",
+        "dev": "npm run esbuild-base -- --sourcemap --watch",
         "package": "npx -y @vscode/vsce package --no-dependencies"
     },
     "dependencies": {
@@ -56,6 +83,7 @@
     },
     "devDependencies": {
         "@types/vscode": "^1.85.0",
+        "esbuild": "^0.20.2",
         "typescript": "^5.3.0"
     }
 }

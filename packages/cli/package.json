@@ -1,11 +1,33 @@
 {
     "name": "@bidirection/cli",
     "version": "1.0.0",
-    "description": "Terminal CLI for BiDirection IDE Bridge",
+    "description": "Terminal CLI for BiDirection IDE Bridge — 41 commands to control VS Code, Antigravity, and AI agents from any terminal",
     "main": "dist/index.js",
     "bin": {
         "bidirection": "./dist/index.js",
         "bd": "./dist/index.js"
+    },
+    "files": [
+        "dist/**/*.js",
+        "dist/**/*.d.ts"
+    ],
+    "keywords": [
+        "vscode",
+        "terminal",
+        "bridge",
+        "cli",
+        "ide",
+        "antigravity",
+        "agent",
+        "bidirectional"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/dmdat/bidirection"
+    },
+    "homepage": "https://github.com/dmdat/bidirection#readme",
+    "bugs": {
+        "url": "https://github.com/dmdat/bidirection/issues"
     },
     "scripts": {
         "build": "tsc",
