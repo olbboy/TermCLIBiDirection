@@ -20,6 +20,7 @@ import { Command } from 'commander';
 import { registerDiscoverCommand } from './commands/discover';
 import { registerBridgeCommands } from './commands/bridge';
 import { registerOsFallbackCommands } from './commands/os-fallback';
+import { registerAgentCommands } from './commands/agent';
 
 const program = new Command();
 
@@ -32,5 +33,6 @@ program
 registerDiscoverCommand(program);
 registerBridgeCommands(program);
 registerOsFallbackCommands(program);
+registerAgentCommands(program);
 
 program.parse();
