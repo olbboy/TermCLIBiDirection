@@ -24,6 +24,8 @@ const os_fallback_1 = require("./commands/os-fallback");
 const agent_1 = require("./commands/agent");
 const brain_1 = require("./commands/brain");
 const knowledge_1 = require("./commands/knowledge");
+const workflow_1 = require("./commands/workflow");
+const skill_1 = require("./commands/skill");
 const program = new commander_1.Command();
 program
     .name('bidirection')
@@ -36,5 +38,7 @@ program
 (0, agent_1.registerAgentCommands)(program);
 (0, brain_1.registerBrainCommands)(program);
 (0, knowledge_1.registerKnowledgeCommands)(program);
+(0, workflow_1.registerWorkflowCommands)(program);
+(0, skill_1.registerSkillCommands)(program);
 program.parse();
 //# sourceMappingURL=index.js.map

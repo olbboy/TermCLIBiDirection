@@ -42,6 +42,18 @@ const TEMPLATES: Record<string, (arg: string) => string> = {
     commit: (content) => `Generate a conventional commit message for this diff. Use the format: type(scope): description\n\n${content}`,
 };
 
+// ─── Mode Prompts ─────────────────────────────────────────────────────
+
+const MODE_WRAPPERS: Record<string, (text: string) => string> = {
+    planning: (text) => `Plan this carefully before implementing. Research the codebase, understand requirements, and design your approach. Create an implementation plan:\n\n${text}`,
+    plan: (text) => MODE_WRAPPERS.planning(text),
+    fast: (text) => `Quick, minimal change. Be concise, skip explanations, just implement:\n\n${text}`,
+    quick: (text) => MODE_WRAPPERS.fast(text),
+    verify: (text) => `Verify and test this. Run tests, check for regressions, validate correctness:\n\n${text}`,
+    check: (text) => MODE_WRAPPERS.verify(text),
+    deep: (text) => `Super ultra deeper reasoning and super ultra deeper thinking. Think more when needed:\n\n${text}`,
+};
+
 // ─── Core: Send text to agent panel ───────────────────────────────────
 
 function sendViaAppleScript(
@@ -222,6 +234,78 @@ function doSend(
 
 // ─── Git Helpers ──────────────────────────────────────────────────────
 
+/**
+ * Type text via keystrokes instead of clipboard (preserves clipboard).
+ * Only practical for short text (<500 chars).
+ */
+function doType(
+    text: string,
+    options: { app?: string; focusKey?: string; submit?: string; dryRun?: boolean },
+): void {
+    if (text.length > 500) {
+        console.error(chalk.yellow('⚠ Text too long for --type mode (>500 chars), using clipboard instead'));
+        doSend(text, options);
+        return;
+    }
+
+    let appName = options.app || DEFAULT_APP;
+    const preset = IDE_PRESETS[appName];
+    const focusKey = options.focusKey || preset?.focusKey || DEFAULT_FOCUS_KEY;
+    const submitMethod = options.submit || preset?.submit || DEFAULT_SUBMIT;
+
+    if (options.dryRun) {
+        console.log(chalk.bold.cyan('\n🔍 Dry Run (type mode):\n'));
+        console.log(`  App:     ${chalk.green(appName)}`);
+        console.log(`  Text:    ${chalk.dim(text)}`);
+        console.log();
+        return;
+    }
+
+    if (process.platform !== 'darwin') {
+        console.error(chalk.red('✗ Only supported on macOS'));
+        process.exit(1);
+    }
+
+    // Escape for AppleScript
+    const escapedText = text
+        .replace(/\\/g, '\\\\')
+        .replace(/"/g, '\\"');
+
+    const submitKeystroke = submitMethod === 'cmd+enter'
+        ? 'keystroke return using {command down}'
+        : 'keystroke return';
+
+    const script = `
+        tell application "${appName}" to activate
+        delay 0.5
+        tell application "System Events"
+            tell process "${appName}"
+                keystroke "${focusKey}" using {command down}
+                delay 0.5
+                keystroke "a" using {command down}
+                delay 0.1
+                keystroke "${escapedText}"
+                delay 0.3
+                ${submitKeystroke}
+            end tell
+        end tell
+        return "ok"
+    `;
+
+    try {
+        execSync(`osascript -e '${script.replace(/'/g, "'\\''")}'`, {
+            encoding: 'utf-8',
+            timeout: 15000,
+        });
+        console.log(chalk.green(`✓ Typed to ${appName} (clipboard preserved)`));
+    } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        console.error(chalk.red(`✗ Failed: ${error.message}`));
+        process.exit(1);
+    }
+}
+
+
 function gitDiff(args: string): string {
     try {
         return execSync(`git diff ${args}`, { encoding: 'utf-8', maxBuffer: 1024 * 1024 * 10 }).trim();
@@ -308,7 +392,9 @@ export function registerAgentCommands(program: Command): void {
             .option('--stdin', 'Read text from stdin')
             .option('-f, --file <path>', 'Read text from a file')
             .option('-c, --context <files...>', 'Attach file content as context')
-            .option('-t, --template <name>', 'Use a prompt template (review, explain, refactor, test, debug, commit)')
+            .option('-@ <files...>', 'Mention files (@file syntax for agent context)')
+            .option('-t, --template <name>', 'Use a prompt template')
+            .option('--type', 'Type text via keystrokes instead of clipboard (short prompts only)')
     ).action(async (textParts: string[], options) => {
         let text = '';
 
@@ -337,6 +423,12 @@ export function registerAgentCommands(program: Command): void {
             text = text + '\n\n---\nContext:\n\n' + contextParts.join('\n\n---\n\n');
         }
 
+        // Prepend @mentions
+        if (options['@']) {
+            const mentions = (options['@'] as string[]).map((f: string) => `@${f}`).join(' ');
+            text = `${mentions} ${text}`;
+        }
+
         // Apply template
         if (options.template) {
             const tmpl = TEMPLATES[options.template];
@@ -354,7 +446,11 @@ export function registerAgentCommands(program: Command): void {
             process.exit(1);
         }
 
-        doSend(text, options);
+        if (options.type) {
+            doType(text, options);
+        } else {
+            doSend(text, options);
+        }
     });
 
     // ─── agent diff ─────────────────────────────────────────────────
@@ -481,15 +577,55 @@ export function registerAgentCommands(program: Command): void {
             console.log(response);
         });
 
+    // ─── agent mode ─────────────────────────────────────────────────
+    commonOpts(
+        agent
+            .command('mode')
+            .description('Send prompt with mode framing (planning, fast, verify, deep)')
+            .argument('<mode>', 'Mode: planning, fast, verify, deep')
+            .argument('[text...]', 'Prompt text')
+            .option('--stdin', 'Read from stdin')
+            .option('-f, --file <path>', 'Read from file')
+    ).action(async (mode: string, textParts: string[], options) => {
+        const wrapper = MODE_WRAPPERS[mode.toLowerCase()];
+        if (!wrapper) {
+            console.error(chalk.red(`✗ Unknown mode: ${mode}`));
+            console.error(chalk.dim('  Available: ' + Object.keys(MODE_WRAPPERS).join(', ')));
+            process.exit(1);
+        }
+
+        let rawText = '';
+        if (options.stdin && !process.stdin.isTTY) {
+            rawText = await readStdin();
+        } else if (options.file) {
+            rawText = readFileWithMeta(options.file);
+        } else if (textParts && textParts.length > 0) {
+            rawText = textParts.join(' ');
+        } else {
+            console.error(chalk.red('✗ No text'));
+            process.exit(1);
+        }
+
+        const text = wrapper(rawText.trim());
+        doSend(text, options);
+    });
+
     // ─── agent templates ────────────────────────────────────────────
     agent
         .command('templates')
-        .description('List available prompt templates')
+        .description('List available prompt templates and modes')
         .action(() => {
             console.log(chalk.bold.cyan('\n📝 Prompt Templates:\n'));
             for (const [name, fn] of Object.entries(TEMPLATES)) {
-                // Show template name and first line of its output
                 const preview = fn('{content}').split('\n')[0];
+                console.log(`  ${chalk.green(name.padEnd(12))} ${chalk.dim(preview)}`);
+            }
+            console.log(chalk.bold.cyan('\n🎯 Modes:\n'));
+            const shownModes = new Set<string>();
+            for (const [name] of Object.entries(MODE_WRAPPERS)) {
+                const preview = MODE_WRAPPERS[name]('{text}').split('\n')[0];
+                if (shownModes.has(preview)) continue;
+                shownModes.add(preview);
                 console.log(`  ${chalk.green(name.padEnd(12))} ${chalk.dim(preview)}`);
             }
             console.log();

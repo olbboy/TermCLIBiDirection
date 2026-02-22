@@ -23,6 +23,8 @@ import { registerOsFallbackCommands } from './commands/os-fallback';
 import { registerAgentCommands } from './commands/agent';
 import { registerBrainCommands } from './commands/brain';
 import { registerKnowledgeCommands } from './commands/knowledge';
+import { registerWorkflowCommands } from './commands/workflow';
+import { registerSkillCommands } from './commands/skill';
 
 const program = new Command();
 
@@ -38,5 +40,7 @@ registerOsFallbackCommands(program);
 registerAgentCommands(program);
 registerBrainCommands(program);
 registerKnowledgeCommands(program);
+registerWorkflowCommands(program);
+registerSkillCommands(program);
 
 program.parse();
