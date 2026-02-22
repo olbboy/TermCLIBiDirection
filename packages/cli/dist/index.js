@@ -26,6 +26,11 @@ const brain_1 = require("./commands/brain");
 const knowledge_1 = require("./commands/knowledge");
 const workflow_1 = require("./commands/workflow");
 const skill_1 = require("./commands/skill");
+const mcp_1 = require("./commands/mcp");
+const tracker_1 = require("./commands/tracker");
+const conversation_1 = require("./commands/conversation");
+const cockpit_1 = require("./commands/cockpit");
+const system_1 = require("./commands/system");
 const program = new commander_1.Command();
 program
     .name('bidirection')
@@ -40,5 +45,10 @@ program
 (0, knowledge_1.registerKnowledgeCommands)(program);
 (0, workflow_1.registerWorkflowCommands)(program);
 (0, skill_1.registerSkillCommands)(program);
+(0, mcp_1.registerMcpCommands)(program);
+(0, tracker_1.registerTrackerCommands)(program);
+(0, conversation_1.registerConversationCommands)(program);
+(0, cockpit_1.registerCockpitCommands)(program);
+(0, system_1.registerSystemCommands)(program);
 program.parse();
 //# sourceMappingURL=index.js.map

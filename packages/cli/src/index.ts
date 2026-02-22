@@ -25,6 +25,11 @@ import { registerBrainCommands } from './commands/brain';
 import { registerKnowledgeCommands } from './commands/knowledge';
 import { registerWorkflowCommands } from './commands/workflow';
 import { registerSkillCommands } from './commands/skill';
+import { registerMcpCommands } from './commands/mcp';
+import { registerTrackerCommands } from './commands/tracker';
+import { registerConversationCommands } from './commands/conversation';
+import { registerCockpitCommands } from './commands/cockpit';
+import { registerSystemCommands } from './commands/system';
 
 const program = new Command();
 
@@ -42,5 +47,10 @@ registerBrainCommands(program);
 registerKnowledgeCommands(program);
 registerWorkflowCommands(program);
 registerSkillCommands(program);
+registerMcpCommands(program);
+registerTrackerCommands(program);
+registerConversationCommands(program);
+registerCockpitCommands(program);
+registerSystemCommands(program);
 
 program.parse();
