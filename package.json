@@ -1,0 +1,21 @@
+{
+  "name": "bidirection",
+  "version": "1.0.0",
+  "description": "Terminal-to-IDE Bidirectional Communication Bridge",
+  "private": true,
+  "workspaces": [
+    "packages/core",
+    "packages/cli",
+    "packages/vscode-extension"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "build:core": "npm run build -w packages/core",
+    "build:cli": "npm run build -w packages/cli",
+    "build:ext": "npm run build -w packages/vscode-extension",
+    "dev": "npm run dev -w packages/cli",
+    "test": "npm test --workspaces --if-present"
+  },
+  "author": "dmdat",
+  "license": "MIT"
+}

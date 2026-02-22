@@ -1,0 +1,61 @@
+{
+    "name": "bidirection-bridge",
+    "displayName": "BiDirection Bridge",
+    "description": "Terminal-to-IDE bidirectional communication bridge via Unix Domain Socket",
+    "version": "1.0.0",
+    "publisher": "dmdat",
+    "engines": {
+        "vscode": "^1.85.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "bidirection.startBridge",
+                "title": "BiDirection: Start Bridge Server"
+            },
+            {
+                "command": "bidirection.stopBridge",
+                "title": "BiDirection: Stop Bridge Server"
+            },
+            {
+                "command": "bidirection.showStatus",
+                "title": "BiDirection: Show Bridge Status"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "BiDirection Bridge",
+            "properties": {
+                "bidirection.autoStart": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Automatically start the bridge server on VS Code startup"
+                },
+                "bidirection.socketPath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Custom socket path (leave empty for default ~/.bidirection/bridge.sock)"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "package": "npx -y @vscode/vsce package --no-dependencies"
+    },
+    "dependencies": {
+        "@bidirection/core": "1.0.0"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.85.0",
+        "typescript": "^5.3.0"
+    }
+}

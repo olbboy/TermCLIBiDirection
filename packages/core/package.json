@@ -1,0 +1,13 @@
+{
+    "name": "@bidirection/core",
+    "version": "1.0.0",
+    "description": "Shared protocol and utilities for BiDirection",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "test": "node --test dist/**/*.test.js"
+    },
+    "license": "MIT"
+}
