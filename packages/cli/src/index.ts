@@ -21,6 +21,8 @@ import { registerDiscoverCommand } from './commands/discover';
 import { registerBridgeCommands } from './commands/bridge';
 import { registerOsFallbackCommands } from './commands/os-fallback';
 import { registerAgentCommands } from './commands/agent';
+import { registerBrainCommands } from './commands/brain';
+import { registerKnowledgeCommands } from './commands/knowledge';
 
 const program = new Command();
 
@@ -34,5 +36,7 @@ registerDiscoverCommand(program);
 registerBridgeCommands(program);
 registerOsFallbackCommands(program);
 registerAgentCommands(program);
+registerBrainCommands(program);
+registerKnowledgeCommands(program);
 
 program.parse();

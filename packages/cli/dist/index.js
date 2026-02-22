@@ -22,6 +22,8 @@ const discover_1 = require("./commands/discover");
 const bridge_1 = require("./commands/bridge");
 const os_fallback_1 = require("./commands/os-fallback");
 const agent_1 = require("./commands/agent");
+const brain_1 = require("./commands/brain");
+const knowledge_1 = require("./commands/knowledge");
 const program = new commander_1.Command();
 program
     .name('bidirection')
@@ -32,5 +34,7 @@ program
 (0, bridge_1.registerBridgeCommands)(program);
 (0, os_fallback_1.registerOsFallbackCommands)(program);
 (0, agent_1.registerAgentCommands)(program);
+(0, brain_1.registerBrainCommands)(program);
+(0, knowledge_1.registerKnowledgeCommands)(program);
 program.parse();
 //# sourceMappingURL=index.js.map

@@ -6,4 +6,5 @@
  */
 export * from './protocol';
 export * from './socket-utils';
+export * from './antigravity';
 //# sourceMappingURL=index.d.ts.map
